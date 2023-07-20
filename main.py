@@ -1,41 +1,41 @@
 from fastapi import FastAPI, HTTPException
 import csv, pandas as pd
 from schema import User
+from typing import Dict
 
 app = FastAPI()
 
 @app.post("/add_csv")
 def add_csv(user: User):
-    # header = ['Name', 'Phone']
+    
     with open('data.csv', mode='a', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
-        # if csvfile.tell() == 0:
-        #     csvwriter.writerow(header)
-
-
-        csvwriter.writerow([user.reg_no, user.name, user.phone])
+        
+        csvwriter.writerow([user.reg_no, user.phone, user.name,"False"])
 
     return "Successfully added data to csv file" 
 
 
-@app.get("/read_csv/{phone}")
-def read_csv(phone: int):
+@app.get("/read_csv")
+def read_csv():
  
     csvfile = pd.read_csv('data.csv')
  
     records = []
+    try:
+        for index, row in csvfile.iterrows():
+            if(row['Waiting'] == True):
+                record = {
+                    "Reg_No": row['Reg_No'],
+                    "Name": row['Name'],
+                    "Phone": row['Phone']
+                }
+                records.append(record)
+        return records        
+    except Exception:
+        raise HTTPException(status_code=404, detail="Data not found") 
 
-    for index, row in csvfile.iterrows():
-        if(row['Phone'] == phone):
-            record = {
-                "Name": row['Name'],
-                "Phone": row['Phone']
-             }
-            records.append(record)
-        else:
-             raise HTTPException(status_code=404, detail="Data not found") 
-
-    return records
+    
 
 @app.put("/update_data/{phone}")
 def update_csv(phone:int,user:User):

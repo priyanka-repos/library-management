@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class User(BaseModel):
-    reg_No : int
+    reg_no : int
     name : str
     phone : int
     
